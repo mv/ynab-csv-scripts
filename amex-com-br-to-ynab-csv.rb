@@ -117,6 +117,15 @@ File.open( "#{dir_name}/#{txt_name}", :encoding => 'iso-8859-1:utf-8').each do |
       flag = 'ignore'                                                      # reset back
     end # case flag
 
+  when /\d+ \s+ de \s+ \w\S+ \s+ (\d{4})$/ixu
+
+    case flag
+    when 'duedate'
+      year = line.match( /\d+ \s+ de \s+ \w\S+ \s+ (\d{4})$/ixu ).captures[0]  # hack...
+      flag = 'ignore' # reset
+      next
+    end # case flag
+
   when /^\s+ \w*/
     puts "line 2: [#{flag}] [#{line.chomp}]" if ENV['YNAB_DEBUG']
 
@@ -125,11 +134,7 @@ File.open( "#{dir_name}/#{txt_name}", :encoding => 'iso-8859-1:utf-8').each do |
       entry[ flag ][ -1 ]['descr'].push trim(line)  # add to the last 'entry'
     when 'ignore'
       next
-    when 'duedate'
-      year = line.match( /^\s+ \d+ \s+ de \s+ \w+ \s+ (\d+)/ixu ).captures[0]  # hack...
-      flag = 'ignore' # reset
-      next
-    end # case flag
+    end
 
   end # case line
 
@@ -147,16 +152,16 @@ sections.each do |section|
     ## info
     case section
     when 'real'
-      day, mes, payee, val = e['info'].match( /^(\d+) \s de \s (\w+) \s* (\w.*) \s+ ([.]?\d+.*)$/ixu ).captures
+      day, mes, payee, val        = e['info'].match( /^(\d+) \s de \s (\w\S+) \s* (\w.*)                 \s+ ([.]?\d+.*)$/ixu ).captures
       descr = e['descr'].join(' / ')
 
     when 'dolar'
-      day, mes, payee, dolar, val = e['info'].match( /^(\d+) \s de \s (\w+) \s* (\w.*) \s+ ([.]?\d+.*) \s+ ([.]?\d+.*)$/ixu ).captures
+      day, mes, payee, dolar, val = e['info'].match( /^(\d+) \s de \s (\w\S+) \s+ (\w.*) \s+ ([.]?\d+.*) \s+ ([.]?\d+.*)$/ixu ).captures
       dolar = dolar.gsub(/[.,]/, '').to_f / 100
       descr = e['descr'].join(' / ')
 
     when 'taxa'
-      day, mes, payee, val = e.match( /^(\d+) \s de \s (\w+) \s* (\w.*) \s+ (\d+.*)$/ixu ).captures
+      day, mes, payee, val        = e.match(         /^(\d+) \s de \s (\w\S+) \s* (\w.*)                 \s+ ([.]?\d+.*)$/ixu ).captures
       descr = 'outros'
 
     end
