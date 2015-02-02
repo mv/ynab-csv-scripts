@@ -146,10 +146,14 @@ sections.each do |section|
   end
 
 end
+csv << ""
 
 ###
 ### Result
 ###
+file = File.open('./1.csv', 'w')
+file.write(csv.join("\n"))
+file.close
 
 # pp entry
 # pp csv
