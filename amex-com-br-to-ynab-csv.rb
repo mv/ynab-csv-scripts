@@ -17,10 +17,16 @@ end
 usage if ARGV.empty?
 
 pdf_name  = ARGV[0]
-base_name = File.basename(ARGV[0], '.*')
-dir_name  = File.dirname( File.absolute_path( base_name ) )
+base_name = File.basename(pdf_name, '.*')
+dir_name  = File.dirname( File.absolute_path( pdf_name ) )
 csv_name  = base_name + '.csv'
 txt_name  = base_name + '.txt'
+
+# puts "Processing: [#{pdf_name}]"
+# puts "base: #{base_name}"
+# puts "dir: #{dir_name}"
+# puts "csv: #{csv_name}"
+# puts "txt: #{txt_name}"
 
 ###
 ### definitions
@@ -69,7 +75,7 @@ meses = {
 ###
 
 # simplify: pdf -> txt
-system("pdftotext #{pdf_name} -layout #{dir_name}/#{txt_name}")
+system("pdftotext #{pdf_name} -layout #{txt_name}")
 
 # parse txt
 File.open( "#{dir_name}/#{txt_name}", :encoding => 'iso-8859-1:utf-8').each do |line|
@@ -178,14 +184,16 @@ csv << ""
 ###
 ### Result
 ###
-file = File.open("#{dir_name}/#{csv_name}", 'w')
+file = File.open(csv_name, 'w')
 file.write(csv.join("\n"))
 file.close
+
+puts "Created: [#{csv_name}]"
 
 ###
 ### Cleanup
 ###
-File.unlink( txt_name ) unless ENV['YNAB_DEBUG']
+File.unlink(txt_name) unless ENV['YNAB_DEBUG']
 
 # pp entry
 # pp csv
