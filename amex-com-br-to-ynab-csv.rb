@@ -177,6 +177,11 @@ file = File.open("#{dir_name}/#{csv_name}", 'w')
 file.write(csv.join("\n"))
 file.close
 
+###
+### Cleanup
+###
+File.unlink( txt_name ) unless ENV['YNAB_DEBUG']
+
 # pp entry
 # pp csv
 # puts "year: #{year}"
