@@ -19,6 +19,7 @@ def noblanks( string )
 end
 
 flag  = 'ignore'
+year  = ''
 entry = {}
 sections = %w( real dolar taxa )
 sections.each{ |s| entry[ s ] =  [] }
@@ -72,6 +73,10 @@ File.open('1.txt', :encoding => 'iso-8859-1:utf-8').each do |line|
     flag = 'ignore'
     next
 
+  when /DATA DO VENCIMENTO$/i
+    flag = 'duedate'
+    next
+
 
   ###
   ### Entries
@@ -87,6 +92,7 @@ File.open('1.txt', :encoding => 'iso-8859-1:utf-8').each do |line|
       entry[ flag ].push trim(line)
     when 'ignore'
       next
+      flag = 'ignore'                                                      # reset back
     end # case flag
 
   when /^\s+ \w*/
@@ -96,6 +102,10 @@ File.open('1.txt', :encoding => 'iso-8859-1:utf-8').each do |line|
     when 'real', 'dolar'
       entry[ flag ][ -1 ]['descr'].push trim(line)  # add to the last 'entry'
     when 'ignore'
+      next
+    when 'duedate'
+      year = line.match( /^\s+ \d+ \s+ de \s+ \w+ \s+ (\d+)/ixu ).captures[0]  # hack...
+      flag = 'ignore' # reset
       next
     end # case flag
 
@@ -129,11 +139,10 @@ sections.each do |section|
 
     end
 
-    dt  = sprintf "%02d/%s/2014", day, meses[mes.downcase]
+    dt  = sprintf "%02d/%s/%s", day, meses[mes.downcase], year
     val = val.gsub(/[.,]/, '').to_f / 100
 
     csv << "'#{dt}','#{trim(payee)}','categ','#{section.capitalize} - #{noblanks(descr)}','#{val}',''"
-
   end
 
 end
@@ -142,6 +151,7 @@ end
 ### Result
 ###
 
-pp entry
-pp csv
+# pp entry
+# pp csv
+# puts "year: #{year}"
 
