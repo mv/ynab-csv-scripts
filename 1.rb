@@ -1,8 +1,15 @@
 #!/usr/bin/env ruby
-#
-#
 
 require 'pp'
+
+###
+### file name
+###
+pdf_name  = ARGV[0]
+base_name = File.basename(ARGV[0], '.*')
+dir_name  = File.dirname( File.absolute_path( base_name ) )
+csv_name  = base_name + '.csv'
+txt_name  = base_name + '.txt'
 
 ###
 ### definitions
@@ -21,14 +28,14 @@ end
 flag  = 'ignore'
 year  = ''
 entry = {}
-sections = %w( real dolar taxa )
-sections.each{ |s| entry[ s ] =  [] }
 
 # entry = {
 #   'real'  => [],
 #   'dolar' => [],
 #   'taxa'  => []
 # }
+sections = %w(real dolar taxa)
+sections.each{ |s| entry[ s ] = [] }
 
 meses = {
    'janeiro'     => '01' ,
@@ -50,7 +57,11 @@ meses = {
 ### pre-process
 ###
 
-File.open('1.txt', :encoding => 'iso-8859-1:utf-8').each do |line|
+# simplify: pdf -> txt
+system("pdftotext #{pdf_name} -layout #{dir_name}/#{txt_name}")
+
+# parse txt
+File.open( "#{dir_name}/#{txt_name}", :encoding => 'iso-8859-1:utf-8').each do |line|
 
   puts "line 0: [#{flag}] [#{line.chomp}]" if ENV['YNAB_DEBUG']
 # puts "line 0: [#{flag}] [#{line.encoding}] [[#{line.chomp}]" #if ENV['YNAB_DEBUG']
@@ -151,7 +162,7 @@ csv << ""
 ###
 ### Result
 ###
-file = File.open('./1.csv', 'w')
+file = File.open("#{dir_name}/#{csv_name}", 'w')
 file.write(csv.join("\n"))
 file.close
 
