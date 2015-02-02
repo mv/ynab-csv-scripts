@@ -5,6 +5,17 @@ require 'pp'
 ###
 ### file name
 ###
+def usage()
+  puts <<-"USAGE"
+
+  Usage: #{$0} path-to-amex-pdf
+
+  USAGE
+  exit 1
+end
+
+usage if ARGV.empty?
+
 pdf_name  = ARGV[0]
 base_name = File.basename(ARGV[0], '.*')
 dir_name  = File.dirname( File.absolute_path( base_name ) )
