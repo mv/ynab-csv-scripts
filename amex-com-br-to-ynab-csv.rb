@@ -22,11 +22,13 @@ dir_name  = File.dirname( File.absolute_path( pdf_name ) )
 csv_name  = base_name + '.csv'
 txt_name  = base_name + '.txt'
 
-# puts "Processing: [#{pdf_name}]"
-# puts "base: #{base_name}"
-# puts "dir: #{dir_name}"
-# puts "csv: #{csv_name}"
-# puts "txt: #{txt_name}"
+if ENV['YNAB_DEBUG']
+  puts "Processing: [#{pdf_name}]"
+  puts "base: #{base_name}"
+  puts "dir: #{dir_name}"
+  puts "csv: #{csv_name}"
+  puts "txt: #{txt_name}"
+end
 
 ###
 ### definitions
