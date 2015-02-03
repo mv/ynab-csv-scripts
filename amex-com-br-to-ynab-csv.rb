@@ -174,20 +174,21 @@ sections.each do |section|
 
     end
 
-    dt  = sprintf "%02d/%s/%s", day, meses[mes.downcase], year
+    dt  = sprintf "%s/%s/%02d", year, meses[mes.downcase], day
     val = val.gsub(/[.,]/, '').to_f / 100
 
     csv << "'#{dt}','#{noblanks(trim(payee))}','categ','#{section.capitalize} - #{noblanks(descr)}','#{val}',''"
   end
 
 end
-csv << ""
 
 ###
 ### Result
 ###
 file = File.open(csv_name, 'w')
-file.write(csv.join("\n"))
+file.write("Date,Payee,Category,Memo,Outflow,Inflow\n")
+file.write(csv.sort.join("\n"))
+file.write("\n")
 file.close
 
 puts "Created: [#{csv_name}]"
