@@ -86,7 +86,7 @@ File.open( txt_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
       dt  = sprintf "%s/%s/%s", year, meses[mes.downcase], day
       val = val.to_f / 100
 
-      csv << "#{dt},#{payee},,,#{val},"
+      csv << "#{dt},#{payee.split.each{ |p| p.capitalize!}.join(' ')},,,#{val},"
 
   end # case line
 
