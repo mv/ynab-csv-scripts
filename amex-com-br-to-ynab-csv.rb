@@ -87,62 +87,62 @@ File.open( txt_name, :encoding => 'iso-8859-1:utf-8').each do |line|
 
   case line
 
-  ###
-  ### Sections
-  ###
-  when /^DESPESAS EM REAL/i
-    flag = 'real'
-    next
-  when /^DESPESAS EM MOEDA ESTRANGEIRA/i
-    flag = 'dolar'
-    next
-  when /^OUTROS LAN/i
-    flag = 'taxa'
-    next
-  when /^Total/i
-    flag = 'ignore'
-    next
-
-  when /DATA DO VENCIMENTO$/i
-    flag = 'duedate'
-    next
-
-
-  ###
-  ### Entries
-  ###
-  when /^\d+ \s de \s/ix
-    puts "line 1: [#{flag}] [#{line.chomp}]" if ENV['YNAB_DEBUG']
-
-    case flag
-    when 'real', 'dolar'
-      hash = { 'info' => trim(line), 'descr' => [] }
-      entry[ flag ].push hash
-    when 'taxa'
-      entry[ flag ].push trim(line)
-    when 'ignore'
+    ###
+    ### Sections
+    ###
+    when /^DESPESAS EM REAL/i
+      flag = 'real'
       next
-      flag = 'ignore'                                                      # reset back
-    end # case flag
-
-  when /\d+ \s+ de \s+ \w\S+ \s+ (\d{4})$/ixu
-
-    case flag
-    when 'duedate'
-      year = line.match( /\d+ \s+ de \s+ \w\S+ \s+ (\d{4})$/ixu ).captures[0]  # hack...
-      flag = 'ignore' # reset
+    when /^DESPESAS EM MOEDA ESTRANGEIRA/i
+      flag = 'dolar'
       next
-    end # case flag
-
-  when /^\s+ \w*/
-    puts "line 2: [#{flag}] [#{line.chomp}]" if ENV['YNAB_DEBUG']
-
-    case flag
-    when 'real', 'dolar'
-      entry[ flag ][ -1 ]['descr'].push trim(line)  # add to the last 'entry'
-    when 'ignore'
+    when /^OUTROS LAN/i
+      flag = 'taxa'
       next
-    end
+    when /^Total/i
+      flag = 'ignore'
+      next
+
+    when /DATA DO VENCIMENTO$/i
+      flag = 'duedate'
+      next
+
+
+    ###
+    ### Entries
+    ###
+    when /^\d+ \s de \s/ix
+      puts "line 1: [#{flag}] [#{line.chomp}]" if ENV['YNAB_DEBUG']
+
+      case flag
+      when 'real', 'dolar'
+        hash = { 'info' => trim(line), 'descr' => [] }
+        entry[ flag ].push hash
+      when 'taxa'
+        entry[ flag ].push trim(line)
+      when 'ignore'
+        next
+        flag = 'ignore'                                                      # reset back
+      end # case flag
+
+    when /\d+ \s+ de \s+ \w\S+ \s+ (\d{4})$/ixu
+
+      case flag
+      when 'duedate'
+        year = line.match( /\d+ \s+ de \s+ \w\S+ \s+ (\d{4})$/ixu ).captures[0]  # hack...
+        flag = 'ignore' # reset
+        next
+      end # case flag
+
+    when /^\s+ \w*/
+      puts "line 2: [#{flag}] [#{line.chomp}]" if ENV['YNAB_DEBUG']
+
+      case flag
+      when 'real', 'dolar'
+        entry[ flag ][ -1 ]['descr'].push trim(line)  # add to the last 'entry'
+      when 'ignore'
+        next
+      end
 
   end # case line
 
