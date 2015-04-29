@@ -71,7 +71,7 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
         memo  = row[2] + " - Doc: " + row[4]
         val   = row[5]
 
-        res = "#{dt},'#{payee}','','#{memo}',#{val},"
+        res = "#{dt},#{payee},,#{memo},,#{val}"
         puts "res: [#{res}]" if ENV['YNAB_DEBUG']
 
         csv << res
