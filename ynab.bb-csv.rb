@@ -18,24 +18,14 @@ end
 usage if ARGV.empty?
 
 file_name = ARGV[0]
-base_name = File.basename(file_name, '.*')
-dir_name  = File.dirname( File.absolute_path( file_name ) )
-csv_name  = base_name + '.ynab.csv'
-
-if ENV['YNAB_DEBUG']
-  puts "Processing: [#{file_name}]"
-  puts "base: #{base_name}"
-  puts "dir: #{dir_name}"
-  puts "csv: #{csv_name}"
-end
-
-csv = []
 
 ###
 ### Main
 ###
 
 # force encoding: just in case
+csv = []
+
 File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
 
   puts "line [#{line.chomp}]" if ENV['YNAB_DEBUG']
@@ -83,16 +73,28 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
 end # file
 
 ###
-### Result
+### Results
 ###
-file = File.open(csv_name, 'w')
-file.write("Date,Payee,Category,Memo,Outflow,Inflow\n")
-file.write(csv.sort.join("\n"))
-file.write("\n")
-file.close
+if ENV['YNAB_STDOUT']
+  puts "Date,Payee,Category,Memo,Outflow,Inflow"
+  puts csv.sort.join("\n")
+else
+  base_name = File.basename(file_name, '.*')
+  dir_name  = File.dirname( File.absolute_path( file_name ) )
+  csv_name  = base_name + '.ynab.csv'
 
-puts "Created: [#{csv_name}]"
+  if ENV['YNAB_DEBUG']
+    puts "Processing: [#{file_name}]"
+    puts "base: #{base_name}"
+    puts "dir: #{dir_name}"
+    puts "csv: #{csv_name}"
+  end
 
-# puts "Date,Payee,Category,Memo,Outflow,Inflow"
-# puts csv.sort.join("\n"))
+  file = File.open(csv_name, 'w')
+  file.write("Date,Payee,Category,Memo,Outflow,Inflow\n")
+  file.write(csv.sort.join("\n")) # sort order for same date
+  file.write("\n")
+  file.close
+  puts "Created: [#{csv_name}]"
+end
 
