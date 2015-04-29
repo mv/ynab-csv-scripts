@@ -4,7 +4,7 @@ require 'csv'
 require 'date'
 
 ###
-### file name
+### TODO: improve command line parameters
 ###
 def usage()
   puts <<-"USAGE"
@@ -23,49 +23,44 @@ file_name = ARGV[0]
 ### Main
 ###
 
-# force encoding: just in case
 csv = []
 
+# force encoding: avoid pt-br issues
 File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
 
   puts "line [#{line.chomp}]" if ENV['YNAB_DEBUG']
 
   case line
 
-    # sane: ignore blanks
-    when /^\s*$/
+    # ignore (just in case)
+    when /^\s*$/ # blank lines
       next
-
-    # sane: ignore my comments
-    when /^\s*#/
+    when /^\s*#/ # my comments
       next
 
     # ignore BB stuff
-    when /^"Data"/
+    when /^"Data"/i
       next
-
     when /Saldo Anterior/i
       next
-
     when /S A L D O/i
       next
 
-    # do it
     else
       CSV.parse( line ) do |row|
-
         puts "row: [#{row}]" if ENV['YNAB_DEBUG']
 
+        # 'parse time' -> 'format time'
         dt    = Date.strptime( row[0], "%m/%d/%Y" ).strftime( "%Y/%m/%d" )
         payee = row[2]
         memo  = row[2] + " - Doc: " + row[4]
         val   = row[5]
 
+        # date,payee,category,memo,outflow,inflow
         res = "#{dt},#{payee},,#{memo},,#{val}"
         puts "res: [#{res}]" if ENV['YNAB_DEBUG']
 
         csv << res
-
       end
 
   end # case line
