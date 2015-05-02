@@ -14,18 +14,7 @@ end
 
 usage if ARGV.empty?
 
-txt_name  = ARGV[0]
-base_name = File.basename(txt_name, '.*')
-dir_name  = File.dirname( File.absolute_path( txt_name ) )
-csv_name  = base_name + '.csv'
-
-if ENV['YNAB_DEBUG']
-  puts "Processing: [#{txt_name}]"
-  puts "base: #{base_name}"
-  puts "dir: #{dir_name}"
-  puts "csv: #{csv_name}"
-end
-
+file_name = ARGV[0]
 
 ###
 ### definitions
@@ -63,16 +52,16 @@ meses = {
 ###
 
 csv = []
-File.open( txt_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
+File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
 
-  puts "line 0: [#{line.chomp}]" if ENV['YNAB_DEBUG']
+  puts "line:  [#{line.chomp}]" if ENV['YNAB_DEBUG']
 
   case line
     when /^\s*$/
       next
 
     when /^[#] \s* Venc \s+/ix
-      year = line.match( /^[#] \s* Venc \s+ \d\d[\/]\w+[\/](\d{4})$/ixu ).captures[0]
+      year = line.match( /^[#] \s* Venc \s+ \d\d[\/]\w+[\/](\d{4})/ixu ).captures[0]
       puts "Year: #{year}"       if ENV['YNAB_DEBUG']
 
     when /^\d+/ # \s \w+ \s/
@@ -81,7 +70,7 @@ File.open( txt_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
       line.gsub!( /(\d)[.,](\d)/, '\1\2' )
 
       day, mes, payee, val = line.match( /(\d+) \s+ (\w+) \s+ (\w.+) \s+ ([-]?\d+)$/ixu ).captures
-      puts "line 1: [#{day}] [#{mes}] [#{payee}] [#{val}]" if ENV['YNAB_DEBUG']
+      puts "match: [#{day}] [#{mes}] [#{payee}] [#{val}]" if ENV['YNAB_DEBUG']
 
       dt  = sprintf "%s/%s/%s", year, meses[mes.downcase], day
       val = val.to_f / 100
@@ -94,17 +83,28 @@ File.open( txt_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
 end # file
 
 ###
-### Result
+### Results
 ###
-file = File.open(csv_name, 'w')
-file.write("Date,Payee,Category,Memo,Outflow,Inflow\n")
-file.write(csv.sort.join("\n"))
-file.write("\n")
-file.close
+if ENV['YNAB_STDOUT']
+  puts "Date,Payee,Category,Memo,Outflow,Inflow"
+  puts csv.sort.join("\n")
+else
+  base_name = File.basename(file_name, '.*')
+  dir_name  = File.dirname( File.absolute_path( file_name ) )
+  csv_name  = base_name + '.ynab.csv'
 
-puts "Created: [#{csv_name}]"
+  if ENV['YNAB_DEBUG']
+    puts "Processing: [#{file_name}]"
+    puts "base: #{base_name}"
+    puts "dir: #{dir_name}"
+    puts "csv: #{csv_name}"
+  end
 
-# pp entry
-# pp csv
-# puts "year: #{year}"
+  file = File.open(csv_name, 'w')
+  file.write("Date,Payee,Category,Memo,Outflow,Inflow\n")
+  file.write(csv.sort.join("\n")) # sort order for same date
+  file.write("\n")
+  file.close
+  puts "Created: [#{csv_name}]"
+end
 
