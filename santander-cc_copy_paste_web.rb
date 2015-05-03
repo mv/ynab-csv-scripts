@@ -23,6 +23,7 @@ file_name = ARGV[0]
 ###
 
 csv = []
+due_date = ''
 
 # force encoding: avoid pt-br issues
 File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
@@ -32,6 +33,8 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
   case line
 
     # ignore most lines...
+    when /^\s*$/
+      next
 
     # ... except an entry with a full date and details.
     when /^ \d{2} [\/] \d{2} [\/] \d{4} \s+ \w+/ix
@@ -40,10 +43,8 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
       line.gsub!( /(\d)[.](\d)/, '\1\2' )
       line.gsub!( /(\d)[,](\d)/, '\1\2' )
       puts "entry [#{line.chomp}]" if ENV['YNAB_DEBUG']
-
       # regex: simpler
       dt, payee, val, dolar = line.match( /^ (\d{2}[\/]\d{2}[\/]\d{4}) \s+ (\w.+) \s+ ([-]?\d+) \s+ ([-]?\d+) $/ixu ).captures
-      memo = payee
 
       # 'parse time' -> 'format time'
       dt   = Date.strptime( dt, "%d/%m/%Y" ).strftime( "%Y/%m/%d" )
@@ -51,13 +52,42 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
       # string back to number
       val  = sprintf("%.2f", val.to_f / 100)
 
-      # date,payee,category,memo,outflow,inflow
-      res = "#{dt},#{payee},,#{memo},,#{val}"
-      puts "res   [#{res}]" if ENV['YNAB_DEBUG']
+    # due date: for taxes
+    when /^ \d{2} [\/] \d{2} [\/] \d{4}$/x
 
-      csv << res
+      due_date = line.match( /^ (\d{2}[\/]\d{2}[\/]\d{4}) $/x ).captures[0]
+      puts "due   [#{due_date}]" if ENV['YNAB_DEBUG']
+      next
+
+    # capture taxes
+    when /^Multa por atraso/i , /^Juros de mora/i , /^[(][+][)]Encargos/i
+
+      payee, val = line.match( /(\w.+)[:] \s+ (.+) $/xu ).captures
+
+      dt  = Date.strptime( due_date, "%d/%m/%Y" ).strftime( "%Y/%m/01" )
+      val = sprintf("%.2f", val.gsub( /[.,]/, '' ).to_f / 100)
+
+      puts "tax   [#{dt} - #{payee} : #{val}]" if ENV['YNAB_DEBUG']
+
+      next if val == '0.00' # no tax: ignore
+
+    # ignore everything else
+    else
+      next
 
   end # case line
+
+  ###
+  ### build entry result
+  ###
+
+  memo = payee
+
+  # date,payee,category,memo,outflow,inflow
+  res = "#{dt},#{payee},,#{memo},#{val},"
+  puts "res   [#{res}]" if ENV['YNAB_DEBUG']
+
+  csv << res
 
 end # file
 
