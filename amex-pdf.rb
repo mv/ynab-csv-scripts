@@ -178,8 +178,9 @@ sections.each do |section|
     dt  = sprintf "%s/%s/%02d", year, meses[mes.downcase], day
     val = val.gsub(/[.,]/, '').to_f / 100
 
-    payee = noblanks(trim(payee.split.each{ |w| w.capitalize!}.join(' ')))
-    csv << "#{dt},#{payee},categ,#{section.capitalize} - #{noblanks(descr)},#{val},"
+    payee = noblanks( trim(payee) ).gsub( /,/, '.' )
+    descr = noblanks( trim(descr) ).gsub( /,/, '.' )
+    csv << "#{dt},#{payee},,#{payee} - #{descr},#{val},"
 
   end
 
