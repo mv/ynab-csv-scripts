@@ -60,8 +60,12 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
     when /^\s*$/
       next
 
-    when /^[#] \s* Venc \s+/ix
-      year = line.match( /^[#] \s* Venc \s+ \d\d[\/]\w+[\/](\d{4})/ixu ).captures[0]
+    when /^[#] \s* Venc/ix
+      begin
+        year = line.match( /^[#] \s* Venc \s+ \d\d[\/]\w+[\/](\d{4})/ixu ).captures[0]
+      rescue
+        year = line.match( /^[#] \s* Vencimento \s+ \d\d \s+ \w+ \s+ (\d{4})/ixu ).captures[0]
+      end
       puts "Year: #{year}"       if ENV['YNAB_DEBUG']
 
     when /^\d+/ # \s \w+ \s/
