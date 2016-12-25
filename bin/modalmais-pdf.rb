@@ -55,7 +55,7 @@ csv   = []
 system("pdftotext #{pdf_name} -layout #{txt_name}")
 
 # parse txt
-File.open( txt_name, :encoding => 'iso-8859-1:utf-8').each do |line|
+File.open( txt_name, :encoding => 'utf-8').each do |line|
 
   line.chomp!
   puts "line: [#{line}]" if ENV['YNAB_DEBUG']
@@ -70,8 +70,7 @@ File.open( txt_name, :encoding => 'iso-8859-1:utf-8').each do |line|
 
     when /^\s*\d\d[\/]\d\d[\/]\d\d\d\d/x
 
-      puts "line: [#{line}]" if ENV['YNAB_DEBUG']
-
+      line.encode(Encoding::ISO_8859_1)
       day, mes, year, payee, val = line.match( /^\s* (\d\d)[\/](\d\d)[\/](\d\d\d\d) \s+ (\w+ .*) \s+ ([+-] \s R[$] \s [-]?\d?[.]?\d+[,]\d+) /ix ).captures
 
       dt    = "#{year}/#{mes}/#{day}"
