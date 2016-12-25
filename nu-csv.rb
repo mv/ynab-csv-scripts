@@ -37,32 +37,25 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
       next
     when /^\s*#/ # my comments
       next
-
-    # ignore CEF stuff
-    when /^"Conta";/i
+    when /^date,title/ # CSV header
       next
 
     else
 
       # massage csv format
-      line.gsub!( /;/, ',' )
-      puts "gsub [#{line.chomp}]" if ENV['YNAB_DEBUG']
+      line.gsub!( /["']/, '' )
 
       CSV.parse( line ) do |row|
         puts "row: |#{row}|" if ENV['YNAB_DEBUG']
 
         # 'parse time' -> 'format time'
-        dt    = Date.strptime( row[1], "%Y%m%d" ).strftime( "%Y/%m/%d" )
-        payee = row[3]
-        memo  = row[3] + " - Doc: " + row[2]
-        val   = row[4]
-        oper  = row[5]
-
-        # put string as a negative number
-        val = '-' + val if oper == 'D'
+        dt    = row[0] # Date.strptime( row[0], "%Y-%m-%d" ).strftime( "%d/%m/%Y" )
+        payee = row[1]
+        memo  = row[1]
+        val   = row[2]
 
         # date,payee,category,memo,outflow,inflow
-        res = "#{dt},#{payee},,#{memo},,#{val}"
+        res = "#{dt},#{payee},,#{memo},#{val}"
         puts "res: [#{res}]" if ENV['YNAB_DEBUG']
 
         csv << res
