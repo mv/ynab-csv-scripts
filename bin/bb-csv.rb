@@ -47,7 +47,11 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
       next
 
     else
+
+      line.encode(Encoding::ISO_8859_1)
+
       CSV.parse( line ) do |row|
+
         puts "row: [#{row}]" if ENV['YNAB_DEBUG']
 
         # 'parse time' -> 'format time'
@@ -70,9 +74,13 @@ end # file
 ###
 ### Results
 ###
+
+# sort order for some same date entries
+csv = csv.sort.join("\n")
+
 if ENV['YNAB_STDOUT']
   puts "Date,Payee,Category,Memo,Outflow,Inflow"
-  puts csv.sort.join("\n")
+  puts csv
 else
   base_name = File.basename(file_name, '.*')
   dir_name  = File.dirname( File.absolute_path( file_name ) )
@@ -87,7 +95,7 @@ else
 
   file = File.open(csv_name, 'w')
   file.write("Date,Payee,Category,Memo,Outflow,Inflow\n")
-  file.write(csv.sort.join("\n")) # sort order for same date
+  file.write(csv)
   file.write("\n")
   file.close
   puts "Created: [#{csv_name}]"
