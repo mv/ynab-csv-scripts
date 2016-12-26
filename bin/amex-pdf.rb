@@ -111,6 +111,16 @@ File.open( txt_name, :encoding => 'utf-8').each do |line|
     ###
     ### Entries
     ###
+
+    # Ignoring last payment info.
+    when /PAGAMENTO \s RECEBIDO/x
+      next
+
+    # 'Credito' alone in the line
+    when /\s+ Cr.?dito$/ix
+      next
+
+    # date 1
     when /^\d+ \s de \s/ix
       puts "line 1: [#{flag}] [#{line.chomp}]" if ENV['YNAB_DEBUG']
 
@@ -125,6 +135,7 @@ File.open( txt_name, :encoding => 'utf-8').each do |line|
         flag = 'ignore'                                                      # reset back
       end # case flag
 
+    # date 2
     when /\d+ \s+ de \s+ \w\S+ \s+ (\d{4})$/ixu
 
       case flag
@@ -134,6 +145,7 @@ File.open( txt_name, :encoding => 'utf-8').each do |line|
         next
       end # case flag
 
+    # description
     when /^\s+ \w*/
       puts "line 2: [#{flag}] [#{line.chomp}]" if ENV['YNAB_DEBUG']
 
