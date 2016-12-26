@@ -35,9 +35,9 @@ To show the results without saving to a new file try:
 
 2. [Banco do Brasil](https://conta.nubank.com.br)
 
-    Type: OFX
+    Type: CSV
         Conta Corrente -> Extrato -> Aba: mes/ano
-        -> Clique Icone Download -> OFX
+        -> Clique Icone Download -> CSV
 
 
 3. [CEF](https://internetbanking.caixa.gov.br/)
@@ -69,6 +69,7 @@ To show the results without saving to a new file try:
 7. [Satander](https://www.santander.com.br/)
 
     Type: CSV
+        Conta Corrente -> Extrado Digital -> Meses Anteriores
 
 
 8. [Sofisa Direto](https://www.sofisadireto.com.br)
