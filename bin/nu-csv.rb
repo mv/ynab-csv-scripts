@@ -9,7 +9,7 @@ require 'date'
 def usage()
   puts <<-"USAGE"
 
-  Usage: #{$0} path-to-cef-txt
+  Usage: #{$0} path/to/nu/file.csv
 
   USAGE
   exit 1
