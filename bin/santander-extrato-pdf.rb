@@ -8,7 +8,7 @@ require 'pp'
 def usage()
   puts <<-"USAGE"
 
-  Usage: #{$0} path-to-amex-pdf
+  Usage: #{$0} santander-extrato-pdf.rb
 
   USAGE
   exit 1
