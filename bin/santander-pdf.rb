@@ -57,8 +57,9 @@ end
 
 flag = 'start'
 csv  = []
-dt, day, mes, year = ''
 payee, memo, val = ''
+dt, day, mes = ''
+year = '----'
 
 ###
 ### pre-process
@@ -79,10 +80,7 @@ File.open( txt_name, :encoding => 'utf-8').each do |line|
     ### Sections
     ###
 
-    when /^ \s+ EXTRATO \s+ INTELIGENTE/x
-      flag = 'year'
-      next
-    when /^ \s+ ContaMax \s* $/x
+    when / \s+ Movimentação \s* $/xu
       flag = 'contacorrente'
       next
     when /^ \s+ Saldos \s por \s Per/x
@@ -110,15 +108,14 @@ File.open( txt_name, :encoding => 'utf-8').each do |line|
     ### Entries
     ###
 
+
     # get current year
-    when /^ \s+ \w+ \s+ \d\d\d\d \s* $/x
+    when /^Extrato_PF_Inteligente - \d\d*[\/]\d\d*[\/](\d\d\d\d)/
 
-      next unless flag == 'year' # avoid matching in next sections
+      next unless year == '----'
 
-      year = line.match(/^ \s+ \w+ \s+ (\d\d\d\d) \s* $/x).captures[0]
-
-      puts "line 1: [#{flag}] [#{year}]" if ENV['YNAB_DEBUG']
-      flag = 'ignore'
+      year = $1
+      puts "line z: [year=#{year}]" if ENV['YNAB_DEBUG']
 
       next
 
