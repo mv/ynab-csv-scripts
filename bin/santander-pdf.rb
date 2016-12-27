@@ -137,7 +137,7 @@ File.open( txt_name, :encoding => 'utf-8').each do |line|
 
       dt    = "#{year}/#{mes}/#{day}"
       memo  = fix_spaces(memo)
-      payee = memo
+      payee = memo.split.map(&:capitalize).join(' ') # Capitalize
 
       memo  = "#{memo} - #{doc}" unless doc == "-"
       val   = fix_val(val,oper)
@@ -164,7 +164,7 @@ File.open( txt_name, :encoding => 'utf-8').each do |line|
       memo, doc, val, oper = $1, $2, $3, $4
 
       memo  = fix_spaces(memo)
-      payee = memo
+      payee = memo.split.map(&:capitalize).join(' ')
 
       memo  = "#{memo} - #{doc}" unless doc == "-"
       val   = fix_val(val,oper)
@@ -193,6 +193,7 @@ File.open( txt_name, :encoding => 'utf-8').each do |line|
 
       # some entries have 'HH:mm'
       payee.gsub!( /\d\d[:]\d\d \s/x, '' )
+      payee = payee.split.map(&:capitalize).join(' ')
 
       # redo last entry
       memo = "#{dt_at} | #{payee} - #{memo}"
@@ -219,6 +220,7 @@ File.open( txt_name, :encoding => 'utf-8').each do |line|
 
       payee = $1
       payee = fix_spaces(payee)
+      payee = payee.split.map(&:capitalize).join(' ')
 
       # redo last entry
       sink = csv.pop  # ignore
