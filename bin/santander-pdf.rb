@@ -236,18 +236,11 @@ File.open( txt_name, :encoding => 'utf-8').each do |line|
 end # file
 
 ###
-### Parse
-###
-
-###
 ### Result
 ###
-
 File.open(csv_name, 'w') do |f|
-
   f.puts("Date,Payee,Category,Memo,Outflow,Inflow")
   csv.each { |c| f.puts(c) }
-
 end
 
 puts "Created: [#{csv_name}]"
@@ -256,8 +249,4 @@ puts "Created: [#{csv_name}]"
 ### Cleanup
 ###
 File.unlink(txt_name) unless ENV['YNAB_DEBUG']
-
-# pp entry
-# pp csv
-# puts "year: #{year}"
 
