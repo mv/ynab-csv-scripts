@@ -68,26 +68,27 @@ end # file
 ###
 ### Results
 ###
+
 if ENV['YNAB_STDOUT']
   puts "Date,Payee,Category,Memo,Outflow,Inflow"
-  puts csv.sort.join("\n")
-else
-  base_name = File.basename(file_name, '.*')
-  dir_name  = File.dirname( File.absolute_path( file_name ) )
-  csv_name  = base_name + '.ynab.csv'
-
-  if ENV['YNAB_DEBUG']
-    puts "Processing: [#{file_name}]"
-    puts "base: #{base_name}"
-    puts "dir: #{dir_name}"
-    puts "csv: #{csv_name}"
-  end
-
-  file = File.open(csv_name, 'w')
-  file.write("Date,Payee,Category,Memo,Outflow,Inflow\n")
-  file.write(csv.sort.join("\n")) # sort order for same date
-  file.write("\n")
-  file.close
-  puts "Created: [#{csv_name}]"
+  puts csv
+  exit
 end
+
+base_name = File.basename(file_name, '.*')
+dir_name  = File.dirname( File.absolute_path( file_name ) )
+csv_name  = base_name + '.ynab.csv'
+
+if ENV['YNAB_DEBUG']
+  puts "Processing: [#{file_name}]"
+  puts "base: #{base_name}"
+  puts "dir: #{dir_name}"
+  puts "csv: #{csv_name}"
+end
+
+File.open(csv_name, 'w') do |f|
+  f.puts("Date,Payee,Category,Memo,Outflow,Inflow")
+  csv.each { |c| f.puts(c) }
+end
+
 
