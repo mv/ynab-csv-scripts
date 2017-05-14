@@ -88,13 +88,15 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
       next
     when /SALDO ANTERIOR/i
       next
+    when /^['"]?Total/i
+      next
+    when /^;['"]?SubTotal/i
+      next
 
     else
       # xls to CSV fixes
       line.gsub!( /[ ][;]/ , ';' )   # [30/04/2017 ;SALDO ANTERIOR ; ; ; ;"2.666,95 "]
       line.gsub!( /[ ]["]/ , '"' )
-      line.gsub!( /([0-9])[.]([0-9])/ , '' )      # remove  '.' as number separator
-      line.gsub!( /([0-9])[,]([0-9])/ , '\1.\2')  # replace ',' as decimal separator
       line.gsub!( /\s+/ , ' ')  # reduce multiple spaces
 
       puts "line [#{line}]" if ENV['YNAB_DEBUG']
@@ -128,7 +130,7 @@ File.open(csv_name, 'w') do |f|
   f.puts("Date,Payee,Category,Memo,Outflow,Inflow")
   csv.each do |c|
 
-    case c # memo
+    case c # csv string
 
     ###
     ### Transferencia entre contas
