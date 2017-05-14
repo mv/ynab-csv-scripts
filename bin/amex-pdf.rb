@@ -80,7 +80,8 @@ meses = {
 system("pdftotext #{pdf_name} -layout #{txt_name}")
 
 # parse txt
-File.open( txt_name, :encoding => 'utf-8').each do |line|
+#File.open( txt_name, :encoding => 'utf-8').each do |line|
+File.open( txt_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
 
   puts "line 0: [#{flag}] [#{line.chomp}]" if ENV['YNAB_DEBUG']
 # puts "line 0: [#{flag}] [#{line.encoding}] [[#{line.chomp}]" #if ENV['YNAB_DEBUG']
