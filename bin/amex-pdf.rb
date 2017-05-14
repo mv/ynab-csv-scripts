@@ -203,7 +203,7 @@ end
 ###
 file = File.open(csv_name, 'w')
 file.write("Date,Payee,Category,Memo,Outflow,Inflow\n")
-file.write(csv.sort.join("\n"))
+file.write(csv.join("\n"))
 file.write("\n")
 file.close
 
