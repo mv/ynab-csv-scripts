@@ -29,6 +29,8 @@ csv = []
 File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
 
   puts "line [#{line.chomp}]" if ENV['YNAB_DEBUG']
+  line = line.encode('iso-8859-1').encode('utf-8')
+  puts "line![#{line.chomp}]" if ENV['YNAB_DEBUG']
 
   case line
 
@@ -37,7 +39,7 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
       next
     when /^\s*#/ # my comments
       next
-    when /^date,title/ # CSV header
+    when /^date/ # CSV header
       next
 
     else
@@ -51,11 +53,12 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
         # 'parse time' -> 'format time'
         dt    = row[0] # Date.strptime( row[0], "%Y-%m-%d" ).strftime( "%d/%m/%Y" )
         payee = row[1]
-        memo  = row[1]
-        val   = row[2]
+        memo  = row[2]
+        val   = row[3]
 
         # date,payee,category,memo,outflow,inflow
-        res = "#{dt},#{payee},,#{memo},#{val}"
+        # res = "#{dt},#{payee},,#{memo},#{val}"
+        res = "#{dt},#{memo},,#{memo},#{val}"
         puts "res: [#{res}]" if ENV['YNAB_DEBUG']
 
         csv << res
