@@ -48,17 +48,17 @@ def fix_spaces( memo )
   memo = noblanks( memo )
 end
 
-def fix_val( val, oper )
+def fix_val( val=nil, oper='' )
+  return 0 if val.nil?
   val = val.gsub( ".", ""  )
   val = val.gsub( ",", "." )
   val = "#{oper}#{val}"   # negative sign
+  val.to_f
 end
 
 def fix_payee( line, new_payee )
   a = line.split( "," )
-  memo  = a[1] + " " + a[3]
   a[1]  = new_payee
-  a[3]  = memo
   a.join(",")
 end
 
@@ -107,13 +107,14 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
         # 'parse time' -> 'format time'
         dt    = Date.strptime( row[0], "%d/%m/%Y" ).strftime( "%Y/%m/%d" )
         payee = row[1].gsub( /[ ]+/, " " )
-        memo  = payee
-        memo  = payee + " - NroDoc: " + row[2] if row[2] != "000000" # add if present
-        inflow  = row[3]
-        outflow = row[4]
 
+        memo = row[1]
+        ndoc = row[2]
+
+        # just one will be present...
+        val = fix_val(row[3]) + fix_val(row[4])
         # date,payee,category,memo,outflow,inflow
-        res = "#{dt},#{payee},,#{memo},#{outflow},#{inflow}"
+        res = "#{dt},#{payee},,#{memo},,#{val},#{ndoc}"
         puts "res: [#{res}]" if ENV['YNAB_DEBUG']
 
         csv << res
@@ -167,6 +168,15 @@ File.open(csv_name, 'w') do |f|
     ###
     when /CREDITO DE SALARIO/
       c = fix_payee( c, 'Credito de Salario' )
+
+    ###
+    ### Cheque
+    ###
+    when /CHEQUE/
+      a = c.split( "," )
+      a[1] = "Cheque"
+      a[3] = "Cheque " + a[6]
+      c = a.join( "," )
 
     ###
     ### DARF
