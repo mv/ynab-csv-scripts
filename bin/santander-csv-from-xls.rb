@@ -18,6 +18,49 @@ end
 usage if ARGV.empty?
 
 file_name = ARGV[0]
+base_name = File.basename(file_name, '.*')
+dir_name  = File.dirname( File.absolute_path( file_name ) )
+csv_name  = base_name + '.ynab.csv'
+
+if ENV['YNAB_DEBUG']
+  puts "Processing: [#{file_name}]"
+  puts "base: #{base_name}"
+  puts "dir:  #{dir_name}"
+  puts "csv:  #{csv_name}"
+end
+
+###
+### definitions
+###
+
+def trim( string )
+  return '' unless string
+  string.gsub(/^\s+|\s+$/,'')
+end
+
+def noblanks( string )
+  return '' unless string
+  string.gsub(/\s{2,}/,' ')
+end
+
+def fix_spaces( memo )
+  memo = trim( memo )
+  memo = noblanks( memo )
+end
+
+def fix_val( val, oper )
+  val = val.gsub( ".", ""  )
+  val = val.gsub( ",", "." )
+  val = "#{oper}#{val}"   # negative sign
+end
+
+def fix_payee( line, new_payee )
+  a = line.split( "," )
+  memo  = a[1] + " " + a[3]
+  a[1]  = new_payee
+  a[3]  = memo
+  a.join(",")
+end
 
 ###
 ### Main
@@ -79,28 +122,64 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
 end # file
 
 ###
-### Results
+### Result
 ###
-if ENV['YNAB_STDOUT']
-  puts "Date,Payee,Category,Memo,Outflow,Inflow"
-  puts csv.sort.join("\n")
-else
-  base_name = File.basename(file_name, '.*')
-  dir_name  = File.dirname( File.absolute_path( file_name ) )
-  csv_name  = base_name + '.ynab.csv'
+File.open(csv_name, 'w') do |f|
+  f.puts("Date,Payee,Category,Memo,Outflow,Inflow")
+  csv.each do |c|
 
-  if ENV['YNAB_DEBUG']
-    puts "Processing: [#{file_name}]"
-    puts "base: #{base_name}"
-    puts "dir: #{dir_name}"
-    puts "csv: #{csv_name}"
+    case c # memo
+
+    ###
+    ### Transferencia entre contas
+    ###
+    when /TRANSFERENCIA ENTRE CONTAS/
+      c = fix_payee( c, 'Transferencia entre Contas' )
+
+    when /TRANSF VALOR/
+      c = fix_payee( c, 'Transferencia entre Contas' )
+
+    ###
+    ### IOF do Periodo
+    ###
+    when /Periodo[:].*IOF/
+      c = fix_payee( c, 'IOF do Periodo' )
+
+    ###
+    ### TED/DOC
+    ###
+    when /TED RECEB/
+      c = fix_payee( c, 'TED Receb' )
+
+    when /TED DIFERENTE TITULAR/
+      c = fix_payee( c, 'TED Diferente titularidade' )
+
+    when /DOC \w RECEB/
+      c = fix_payee( c, 'DOC Recebido' )
+
+    when /EMISSAO DE DOC/
+      c = fix_payee( c, 'Emissao de DOC')
+
+    ###
+    ### Credito de Salario
+    ###
+    when /CREDITO DE SALARIO/
+      c = fix_payee( c, 'Credito de Salario' )
+
+    ###
+    ### DARF
+    ###
+    when /PAGAMENTO DARF/
+      a = c.split( "," )
+      a[1] = "Pagamento DARF"
+      c = a.join( "," )
+
+
+    end
+
+    f.puts(c)
   end
-
-  file = File.open(csv_name, 'w')
-  file.write("Date,Payee,Category,Memo,Outflow,Inflow\n")
-  file.write(csv.sort.join("\n")) # sort order for same date
-  file.write("\n")
-  file.close
-  puts "Created: [#{csv_name}]"
 end
+
+puts "Created: [#{csv_name}]"
 
