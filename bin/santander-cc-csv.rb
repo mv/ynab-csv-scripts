@@ -20,6 +20,18 @@ usage if ARGV.empty?
 file_name = ARGV[0]
 
 ###
+### definitions
+###
+
+def fix_val( val=nil, oper='' )
+  return 0 if val.nil?
+  val = val.gsub( ".", ""  )
+  val = val.gsub( ",", "." )
+  val = "#{oper}#{val}"   # negative sign
+  val.to_f
+end
+
+###
 ### Main
 ###
 
@@ -45,18 +57,31 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
       next
 
     else
-      CSV.parse( line ) do |row|
+      # xls to CSV fixes
+      line.gsub!( /[ ][;]/ , ';' )   # [30/04/2017 ;SALDO ANTERIOR ; ; ; ;"2.666,95 "]
+      line.gsub!( /[ ]["]/ , '"' )
+      line.gsub!( /\s+/ , ' ')  # reduce multiple spaces
+
+      puts "line [#{line}]" if ENV['YNAB_DEBUG']
+
+      CSV.parse( line, options = { :col_sep => ';' } ) do |row|
         puts "row: [#{row}]" if ENV['YNAB_DEBUG']
 
         # 'parse time' -> 'format time'
         dt    = Date.strptime( row[0], "%d/%m/%Y" ).strftime( "%Y/%m/%d" )
-        payee = row[2]
-        memo  = row[2]
-        memo  = memo + " - NroDoc: " + sprintf("%06d", row[3]) if row[3] != "0" # add if present
-        val   = row[4].gsub( /,/, '.')
+        payee = row[1]
+        memo  = row[1]
+
+        inflow  = fix_val(row[2])
+        outflow = fix_val(row[3])
+        puts "row 2: [#{inflow}]" if ENV['YNAB_DEBUG']
+        puts "row 3: [#{outflow}]" if ENV['YNAB_DEBUG']
+
+        val = inflow * -1 if inflow  != 0
+        val = outflow     if outflow != 0
 
         # date,payee,category,memo,outflow,inflow
-        res = "#{dt},#{payee},,#{memo},,#{val}"
+        res = "#{dt},#{payee},,#{memo},#{val},"
         puts "res: [#{res}]" if ENV['YNAB_DEBUG']
 
         csv << res
