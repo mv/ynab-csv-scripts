@@ -42,6 +42,8 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
 
   puts "line [#{line.chomp}]" if ENV['YNAB_DEBUG']
 
+  ### xls:
+  ### Data 	Descrição 	Crédito (R$) 	Débito (R$) 	Saldo (R$)
   case line
 
     # ignore (just in case)
@@ -51,16 +53,17 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
       next
 
     # ignore Santander stuff
-    when /^Data,/i
+    when /^["]?Data/xi
       next
     when /SALDO ANTERIOR,/i
       next
 
     else
       # xls to CSV fixes
-      line.gsub!( /[ ][;]/ , ';' )   # [30/04/2017 ;SALDO ANTERIOR ; ; ; ;"2.666,95 "]
-      line.gsub!( /[ ]["]/ , '"' )
-      line.gsub!( /\s+/ , ' ')  # reduce multiple spaces
+      line.gsub!( /[ ][;]/ , ';'   )   # [30/04/2017 ;SALDO ANTERIOR ; ; ; ;"2.666,95 "]
+      line.gsub!( /[ ]["]/ , '"'   )
+      line.gsub!( /["]["]/ , '"0"' )
+      line.gsub!( /\s+/    , ' '   )  # reduce multiple spaces
 
       puts "line [#{line}]" if ENV['YNAB_DEBUG']
 
@@ -74,14 +77,14 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
 
         inflow  = fix_val(row[2])
         outflow = fix_val(row[3])
-        puts "row 2: [#{inflow}]" if ENV['YNAB_DEBUG']
+        puts "row 2: [#{inflow}]"  if ENV['YNAB_DEBUG']
         puts "row 3: [#{outflow}]" if ENV['YNAB_DEBUG']
 
-        val = inflow * -1 if inflow  != 0
-        val = outflow     if outflow != 0
+        val = inflow  if inflow  != 0
+        val = outflow if outflow != 0
 
         # date,payee,category,memo,outflow,inflow
-        res = "#{dt},#{payee},,#{memo},#{val},"
+        res = "#{dt},#{payee},,#{memo},,#{val},"
         puts "res: [#{res}]" if ENV['YNAB_DEBUG']
 
         csv << res
