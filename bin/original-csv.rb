@@ -44,34 +44,34 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
       next
 
     else
-
-      # translate month
-      line.sub!( "Fev","Feb" )
-      line.sub!( "Abr","Apr" )
-      line.sub!( "Mai","May" )
-      line.sub!( "Ago","Aug" )
-      line.sub!( "Set","Sep" )
-      line.sub!( "Out","Oct" )
-      line.sub!( "Dez","Dec" )
-
       # fix CSV
 #     line.encode(Encoding::ISO_8859_1)
-      line.gsub!( ";", "," )
+      line.gsub!( ';', '","' )
+      line = '"' + line + '"'
 
       CSV.parse( line ) do |row|
 
         puts "row: [#{row}]" if ENV['YNAB_DEBUG']
 
         # 'parse time' -> 'format time'
-        dt    = Date.strptime( row[0], "%d/%b" ).strftime( "%Y/%m/%d" )
-        payee = row[1].match( / \w+ \s [-] \s (.*) /x ).captures[0]
+        dt    = Date.strptime( row[0], "%d/%m/%Y" ).strftime( "%Y/%m/%d" )
+#       payee = row[1].match( / \w+ \s [-] \s (.*) /x ).captures[0]
+        payee = row[1]
         memo  = row[1]
         val   = row[3].gsub( / \s? R[$] \s? /x, "" )
         val   = val.gsub( ".", "" )
         val   = val.gsub( ",", ".")
 
-        # date,payee,category,memo,outflow,inflow
-        res = "#{dt},#{payee},,#{memo},,#{val}"
+        if row[2].match( /Compra/i )
+          # date,payee,category,memo,outflow,inflow
+          res = "#{dt},#{payee},,#{memo},#{val},"
+        else
+          # date,payee,category,memo,outflow,inflow
+          res = "#{dt},#{payee},,#{memo},,#{val}"
+        end
+
+#       # date,payee,category,memo,outflow,inflow
+#       res = "#{dt},#{payee},,#{memo},,#{val}"
         puts "res: [#{res}]" if ENV['YNAB_DEBUG']
 
         csv << res
