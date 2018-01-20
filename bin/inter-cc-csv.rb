@@ -46,6 +46,51 @@ def fix_val( val=nil, oper='' )
   val.to_f
 end
 
+def check_memo( payee, memo )
+  case memo
+  when /parcela/i
+    memo = "#{payee} - #{memo}"
+  else
+    memo = payee
+  end
+  return memo
+end
+
+def check_val( payee, val )
+
+  case payee
+
+  when /pagamento online de fatura/i ,
+       /pagamento recebido/i         ,
+       /cred conv dolar/i
+    val = val * -1
+  end
+
+  puts "val: [#{val}]" if ENV['YNAB_DEBUG']
+  return val
+
+end
+
+def check_parcela( dt, memo )
+
+  if match = memo.match(/parcela \s+ (\d+)/ix)
+
+    parcela = match.captures[0].to_i
+    puts "parcela = #{parcela}" if ENV['YNAB_DEBUG']
+
+    # add months
+    new_dt = Date.strptime( dt, "%Y-%m-%d" )
+    new_dt = new_dt >> ( parcela - 1 )
+    dt = new_dt.strftime( "%Y-%m-%d" )
+
+  end
+
+  return dt
+
+end
+
+
+
 ###
 ### Main
 ###
@@ -86,13 +131,14 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
         dt    = row[0] # Date.strptime( row[0], "%Y-%m-%d" ).strftime( "%d/%m/%Y" )
         dt    = Date.strptime( row[0], "%d/%m/%Y" ).strftime( "%Y-%m-%d" )
         payee = fix_spaces( row[1] )
-        memo  = payee
-#       val   = fix_val( row[2] )
+        memo  = check_memo( row[1], row[2] )
         val   = fix_val( row[3] )   # cc
 
+        val   = check_val( payee, val )
+        dt    = check_parcela( dt, memo )
+
         # date,payee,category,memo,outflow,inflow
-        # res = "#{dt},#{payee},,#{memo},#{val}"
-        res = "#{dt},#{memo},,#{memo},#{val},"
+        res = "#{dt},#{payee},,#{memo},#{val},"
         puts "res: [#{res}]" if ENV['YNAB_DEBUG']
 
         csv << res
