@@ -76,7 +76,7 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
         memo  = row[1]
 
         inflow  = fix_val(row[2])
-        outflow = fix_val(row[3])
+        outflow = fix_val(row[3]) * -1
         puts "row 2: [#{inflow}]"  if ENV['YNAB_DEBUG']
         puts "row 3: [#{outflow}]" if ENV['YNAB_DEBUG']
 
