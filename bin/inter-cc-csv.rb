@@ -38,6 +38,10 @@ def fix_spaces( memo )
   memo = noblanks( memo )
 end
 
+def titleize(str)
+  str.split(/ |\_/).map(&:capitalize).join(" ")
+end
+
 def fix_val( val=nil, oper='' )
   return 0 if val.nil?
   val = val.gsub( ".", ""  )
@@ -130,7 +134,7 @@ File.open( file_name, :encoding => 'iso-8859-1:utf-8' ).each do |line|
         # 'parse time' -> 'format time'
         dt    = row[0] # Date.strptime( row[0], "%Y-%m-%d" ).strftime( "%d/%m/%Y" )
         dt    = Date.strptime( row[0], "%d/%m/%Y" ).strftime( "%Y-%m-%d" )
-        payee = fix_spaces( row[1] )
+        payee = fix_spaces( titleize(row[1]) )
         memo  = check_memo( row[1], row[2] )
         val   = fix_val( row[3] )   # cc
 
