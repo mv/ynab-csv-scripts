@@ -38,6 +38,10 @@ def fix_spaces( memo )
   memo = noblanks( memo )
 end
 
+def titleize(str)
+  str.split(/ |\_/).map(&:capitalize).join(" ")
+end
+
 ###
 ### Main
 ###
@@ -51,7 +55,7 @@ ofx.account.transactions.each do |t|
   dt    = t.posted_at.strftime( "%Y-%m-%d" )
 # printf "%10s %10s %10.2f %12s {%s}: [%s]\n", t.type, t.amount_in_pennies, t.amount, t.fit_id, t.posted_at, t.memo if ENV['YNAB_DEBUG']
 
-  payee = fix_spaces( t.memo )
+  payee = fix_spaces( titleize( t.memo ) )
   memo  = payee
   val   = t.amount_in_pennies / 100.00
 
